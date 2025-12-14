@@ -51,6 +51,7 @@ Windowsのアプリの検索欄に「環境変数」と入力し、「環境変�
 ![alt text](docs/edit_env.png)
 
 ターミナルで`Get-ChildItem -Path Env: `を実行して、
+
 「ANDROID_HOME」と設定した変数値が表示されていれば成功です。
 
 4. エミュレーターを起動
@@ -63,6 +64,7 @@ Android Studioの「More Actions」の「Virtual Device Manager」を開いて�
 ![alt text](docs/Device_list_add.png)
 
 今回は「Pixel 9」を選択して「Next」を押す。
+
 ![alt text](docs/Add_device.png)
 
 そのまま「Finish」を押して一覧画面に戻ってきたらPixel 9の「▶」を押す。
@@ -75,8 +77,8 @@ Android Studioの「More Actions」の「Virtual Device Manager」を開いて�
 
 5. Expo goをインストール
 
-少し動作が重いと思いますが、GooglePlay
-から「Expo Go」をインストールしてください。
+少し動作が重いと思いますが、GooglePlayから「Expo Go」をインストールしてください。
+
 （みなさんご存じそうなので割愛）
 
 ***
@@ -90,7 +92,7 @@ git clone git@github.com:hziulq/kototeku2025app.git
 
 をターミナルで実行してレポジトリをクローンしてきます。
 
-2. dockerで環境構築をする
+2. .envを設定する
 
 ターミナルでレポジトリのフォルダ（ディレクトリ）に移動。.envを作成する
 
@@ -103,13 +105,16 @@ Copy-Item .env.example .env
 
 （Wi-Fi設定やイーサネット設定から調べる。具体的な内容は割愛）
 
-docker-composeを使用して環境構築を行う
+3. docker-composeを使用して環境構築を行う
+
+コマンドを実行してdockerのコンテナを起動
 
 ```sh
 docker compose up -d --build
 ```
 
 dockerの環境に入ってExpoの開発サーバーを建てる。
+
 ```sh
 docker compose exec expo-app sh
 # /app # ←みたいなのが出てきたら成功
