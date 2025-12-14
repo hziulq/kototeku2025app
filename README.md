@@ -136,3 +136,11 @@ npm expo start
 これでアプリのプレビューまで見ることができるようになりました。
 
 以上
+
+## 参考リンク
+
+公式ドキュメント
+https://docs.expo.dev/get-started/set-up-your-environment/?platform=android&device=simulated
+
+DockerでReact Native + Expo環境の構築 - Zenn
+https://zenn.dev/iput_app/articles/8051d4ad7e03bf
