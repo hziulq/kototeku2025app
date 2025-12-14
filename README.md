@@ -92,11 +92,20 @@ git clone git@github.com:hziulq/kototeku2025app.git
 
 2. dockerで環境構築をする
 
-ターミナルでレポジトリのフォルダ（ディレクトリ）に移動。
+ターミナルでレポジトリのフォルダ（ディレクトリ）に移動。.envを作成する
+
+```PowerShell
+cd kototeku2025app
+Copy-Item .env.example .env
+```
+
+.envの中身を自身のipアドレスに変更する
+
+（Wi-Fi設定やイーサネット設定から調べる。具体的な内容は割愛）
+
 docker-composeを使用して環境構築を行う
 
 ```sh
-cd kototeku2025app
 docker compose up -d --build
 ```
 
