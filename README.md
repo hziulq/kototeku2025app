@@ -1,52 +1,124 @@
 # kototeku2025app
 
-# Welcome to your Expo app 👋
+## 環境構築
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**前提**
 
-## Get started
+- GitHubにsshでアクセスできる
 
-1. Install dependencies
+- docker-desktopを導入している
 
-   ```bash
-   npm install
-   ```
+- Windows11を使用している
+***
+### Android Studio
 
-2. Start the app
+1. Android Studioをサイトからダウンロード＆インストール
 
-   ```bash
-   npx expo start
-   ```
+https://developer.android.com/studio
 
-In the output, you'll find options to open the app in a
+ダウンロードをしたファイルからインストーラーを起動してインストール。
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+2. SDKをインストール
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+「More Actions」の「SDK Manager」からAndroid15をダウンロードする。
 
-## Get a fresh project
+![alt text](docs/SDK_menu.png)
 
-When you're ready, run:
+- Android SDK Platform 35
+- Source for Android 35
+- Google Play Intel x86_64 Atom System Image
 
-```bash
-npm run reset-project
+  (macOSの場合は「Intel x86_64」が「ARM 64」のものを選んでください)
+
+- Pre-Release 16KB Page Size Google Play Intel x86_64 Atom System Image
+
+   (macOSの場合は「Intel x86_64」が「ARM 64」のものを選んでください)
+
+![alt text](docs/SDK_list.png)
+
+すべてにチェックを入れたら「Apply」、「OK」を押してダウンロードしてください。
+
+3. 環境変数を設定
+
+Windowsのアプリの検索欄に「環境変数」と入力し、「環境変数を編集」を開きます。
+
+「～～～のユーザー環境変数」の「新規」を押して、
+
+変数名に「ANDROID_HOME」
+
+変数値には先ほどのAndroid SDKを入れる画面の「Android SDK Location」の値を入れてください。
+
+![alt text](docs/edit_env.png)
+
+ターミナルで`Get-ChildItem -Path Env: `を実行して、
+「ANDROID_HOME」と設定した変数値が表示されていれば成功です。
+
+4. エミュレーターを起動
+
+Android Studioの「More Actions」の「Virtual Device Manager」を開いてエミュレーターを起動する。
+
+![r](docs/Device_menu.png)
+
+左上の「+」から新しいデバイスを追加する。
+![alt text](docs/Device_list_add.png)
+
+今回は「Pixel 9」を選択して「Next」を押す。
+![alt text](docs/Add_device.png)
+
+そのまま「Finish」を押して一覧画面に戻ってきたらPixel 9の「▶」を押す。
+
+![alt text](docs/Device_list_run.png)
+
+スマホが表示されたら電源を押して起動する。
+
+![alt text](docs/Emulator_start.png)
+
+5. Expo goをインストール
+
+少し動作が重いと思いますが、GooglePlay
+から「Expo Go」をインストールしてください。
+（みなさんご存じそうなので割愛）
+
+***
+
+### Docker
+1. レポジトリをクローン
+
+```sh
+git clone git@github.com:hziulq/kototeku2025app.git
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+をターミナルで実行してレポジトリをクローンしてきます。
 
-## Learn more
+2. dockerで環境構築をする
 
-To learn more about developing your project with Expo, look at the following resources:
+ターミナルでレポジトリのフォルダ（ディレクトリ）に移動。
+docker-composeを使用して環境構築を行う
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```sh
+cd kototeku2025app
+docker compose up -d --build
+```
 
-## Join the community
+dockerの環境に入ってExpoの開発サーバーを建てる。
+```sh
+docker compose exec expo-app sh
+# /app # ←みたいなのが出てきたら成功
+npm expo start
+```
 
-Join our community of developers creating universal apps.
+3. エミュレーターからアクセス
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+先ほどのコマンドを実行すると文字が流れてきますが、
+
+その中に
+
+ Metro waiting on exp://192.168.0.？:8081
+
+の文字列があるはずなのでコピーしてExpo Goの「Enter URL」に張り付けて「Connect」を押してください
+
+![alt text](docs/Enter_URL.png)
+
+これでアプリのプレビューまで見ることができるようになりました。
+
+以上
