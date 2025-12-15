@@ -6,8 +6,13 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+    // typeScriptのimport文で、CommonJSモジュールをESModuleとして扱うための設定
+    "esModuleInterop": true, 
+    // 大文字小文字の違いによるファイル名の不一致をエラーとして扱う設定
+    "forceConsistentCasingInFileNames": true,
   },
+
   "include": [
     "**/*.ts",
     "**/*.tsx",
