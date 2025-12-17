@@ -22,10 +22,6 @@ const DEEPGRAM_API_KEY = process.env.EXPO_PUBLIC_DEEPGRAM_API_KEY || 'YOUR_DEEPG
  * * @returns {Object} 録音状態、結果、操作関数を含むオブジェクト
  */
 export const useTranscription = () => {
-  /** 文字起こしされた最終テキスト */
-  const [transcript, setTranscript] = useState('');
-  /** APIリクエスト中（処理中）かどうかを示すフラグ */
-  const [isLoading, setIsLoading] = useState(false);
   
   // Expo Audioのレコーダー初期化（高品質プリセット）
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
@@ -60,7 +56,6 @@ export const useTranscription = () => {
    */
   const startRecording = async () => {
     try {
-      setTranscript(''); // 新しい録音のために結果をクリア
       await audioRecorder.prepareToRecordAsync();
       audioRecorder.record();
     } catch (err) {
@@ -74,8 +69,6 @@ export const useTranscription = () => {
    */
   const stopRecordingAndTranscribe = async () => {
     try {
-      setIsLoading(true);
-      
       // 1. 録音停止
       await audioRecorder.stop();
       const uri = audioRecorder.uri;
@@ -110,22 +103,15 @@ export const useTranscription = () => {
       const result = await response.json();
       
       // Deepgramのレスポンス構造からテキストを抽出
-      const text = result.results?.channels[0]?.alternatives[0]?.transcript || '文字が検出されませんでした';
+      return result.results?.channels[0]?.alternatives[0]?.transcript || '文字が検出されませんでした';
       
-      setTranscript(text);
     } catch (err) {
-      Alert.alert('エラー', '文字起こし処理に失敗しました');
       console.error('Transcription Error:', err);
-    } finally {
-      setIsLoading(false);
+      return null;
     }
   };
 
   return {
-    /** 文字起こし結果テキスト */
-    transcript,
-    /** 処理中フラグ */
-    isLoading,
     /** 録音中かどうか */
     isRecording: recorderState.isRecording,
     /** 現在の録音時間 (ms) */
@@ -133,6 +119,6 @@ export const useTranscription = () => {
     /** 録音開始関数 */
     startRecording,
     /** 録音停止・文字起こし実行関数 */
-    stopRecordingAndTranscribe,
+    stopAndTranscribe: stopRecordingAndTranscribe,
   };
 };
