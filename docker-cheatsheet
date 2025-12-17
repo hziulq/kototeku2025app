@@ -1,0 +1,29 @@
+# dockerのコマンドの使用頻度の高いものを書くファイル
+
+## 起動コマンド
+
+docker compose up -d
+
+## 停止コマンド
+
+docker compose down
+
+## 停止+ボリュームの削除
+
+docker compose down -v
+
+## クリーンなリビルド
+
+docker compose build --no-cache
+
+## docker内に入る
+
+docker compose exec expo-app sh
+
+## expoサーバの起動
+
+npx expo start
+
+## dockerのcompose.yamlの部分でのエラー含むメッセージ表示
+
+docker compose logs -f
