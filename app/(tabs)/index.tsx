@@ -1,51 +1,34 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
-
+import { CalendarView } from '@/components/calendar';
 
 export default function HomeScreen() {
   const today = new Date();
-  const dateString = today.toLocaleDateString("ja-JP");
-  const insets = useSafeAreaInsets();
+  const monthLabel = today.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long' });
 
   return (
-      <>
-        <ThemedView style={[styles.safeAreaBlock, { height: insets.top }]} />
-
-        <ThemedView style={styles.stepContainer}>
-          <ThemedText type='subtitle'>
-            {dateString}
-          </ThemedText>
-        </ThemedView>
-      </>
+    <SafeAreaView style={styles.safeArea}>
+      <ThemedView style={styles.header}>
+        <ThemedText type="title">{monthLabel}</ThemedText>
+      </ThemedView>
+      <CalendarView />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeAreaBlock: {
-    width: '100%',
-    backgroundColor: '#A1CEDC'
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fa8072',
   },
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+    alignItems: 'flex-start',
+    backgroundColor: '#fa8072',
   },
 });
