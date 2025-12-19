@@ -24,6 +24,10 @@ docker compose exec expo-app sh
 
 npx expo start
 
+## expoアプリを実機で操作するときのオプション
+
+npx expo start --tunnel
+
 ## dockerのcompose.yamlの部分でのエラー含むメッセージ表示
 
 docker compose logs -f
