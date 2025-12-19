@@ -79,11 +79,11 @@ export function CalendarView({ events = [], onSelectDate }: CalendarViewProps) {
       <ThemedView style={styles.header}>
         <ThemedView style={styles.navRow}>
           <TouchableOpacity onPress={() => changeMonth(-1)}>
-            <ThemedText style={styles.navText}>{"<"}</ThemedText>
+            <ThemedText type="title">{"<"}</ThemedText>
           </TouchableOpacity>
-          <ThemedText style={styles.monthText}>{monthLabel}</ThemedText>
+          <ThemedText type="title">{monthLabel}</ThemedText>
           <TouchableOpacity onPress={() => changeMonth(1)}>
-            <ThemedText style={styles.navText}>{">"}</ThemedText>
+            <ThemedText type="title">{">"}</ThemedText>
           </TouchableOpacity>
         </ThemedView>
       </ThemedView>
@@ -148,8 +148,8 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   header: {
-    paddingHorizontal: 4,
-    paddingVertical: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 10,
     backgroundColor: "transparent",
   },
   navRow: {
