@@ -2,10 +2,20 @@ import { useMemo, useState } from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { ThemedView } from "@/components/themed-view";
 import { ThemedText } from "@/components/themed-text";
-
-type EventChip = { title: string; color: string };
+import { CalendarEvent } from "./types/calendar-type";
 
 const daysOfWeek = ["日", "月", "火", "水", "木", "金", "土"];
+
+type CalendarViewProps = {
+  events?: CalendarEvent[];
+  onSelectDate?: (dateKey: string, events: CalendarEvent[]) => void;
+};
+
+const levelColors: Record<number, string> = {
+  1: "#22c55e",
+  2: "#f59e0b",
+  3: "#ef4444",
+};
 
 function formatKey(date: Date) {
   const y = date.getFullYear();
@@ -14,18 +24,25 @@ function formatKey(date: Date) {
   return `${y}-${m}-${d}`;
 }
 
-export function CalendarView() {
+function normalizeDateKey(value: string) {
+  return value.split("T")[0];
+}
+
+export function CalendarView({ events = [], onSelectDate }: CalendarViewProps) {
   const today = new Date();
   const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
 
   const monthLabel = cursor.toLocaleDateString("ja-JP", { year: "numeric", month: "long" });
 
-  const events: Record<string, EventChip[]> = {
-    "2025-12-05": [{ title: "〆切 A", color: "#2563eb" }],
-    "2025-12-10": [{ title: "MTG", color: "#16a34a" }, { title: "レビュー", color: "#dc2626" }],
-    "2025-01-18": [{ title: "納品", color: "#d97706" }],
-    "2025-01-23": [{ title: "検証", color: "#0ea5e9" }, { title: "資料作成", color: "#7c3aed" }, { title: "リリース", color: "#f43f5e" }],
-  };
+  const eventsByDay = useMemo(() => {
+    const grouped: Record<string, CalendarEvent[]> = {};
+    events.forEach((ev) => {
+      const key = normalizeDateKey(ev.date);
+      grouped[key] ? grouped[key].push(ev) : (grouped[key] = [ev]);
+    });
+    Object.values(grouped).forEach((list) => list.sort((a, b) => (a.level ?? 1) - (b.level ?? 1)));
+    return grouped;
+  }, [events]);
 
   const grid = useMemo(() => {
     const year = cursor.getFullYear();
@@ -81,30 +98,40 @@ export function CalendarView() {
 
       <ThemedView style={styles.gridWrap}>
         {grid.map(({ date, inMonth }, idx) => {
-          const key = formatKey(date);
-          const eventList = events[key] || [];
+          const dateKey = formatKey(date);
+          const eventList = eventsByDay[dateKey] ?? [];
           const isToday =
             date.getFullYear() === today.getFullYear() &&
             date.getMonth() === today.getMonth() &&
             date.getDate() === today.getDate();
 
           return (
-            <ThemedView
+            <TouchableOpacity
+              activeOpacity={0.8}
               key={idx}
               style={[styles.dayCell, !inMonth && styles.outMonthCell, isToday && styles.todayCell]}
+              onPress={() => onSelectDate?.(dateKey, eventList)}
             >
               <ThemedText style={styles.dayNumber}>{date.getDate()}</ThemedText>
               <ThemedView style={styles.eventsColumn}>
                 {eventList.slice(0, 3).map((ev, i) => (
-                  <ThemedView key={i} style={[styles.eventChip, { backgroundColor: ev.color }]}> 
-                    <ThemedText style={styles.eventText}>{ev.title}</ThemedText>
+                  <ThemedView
+                    key={`${dateKey}-${i}`}
+                    style={[
+                      styles.eventChip,
+                      { backgroundColor: levelColors[ev.level ?? 1] || "#6366f1" },
+                    ]}
+                  >
+                    <ThemedText style={styles.eventText} numberOfLines={1}>
+                      {ev.title}
+                    </ThemedText>
                   </ThemedView>
                 ))}
                 {eventList.length > 3 && (
                   <ThemedText style={styles.moreText}>+{eventList.length - 3}</ThemedText>
                 )}
               </ThemedView>
-            </ThemedView>
+            </TouchableOpacity>
           );
         })}
       </ThemedView>
@@ -118,18 +145,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     gap: 8,
-    backgroundColor: '#fa8072'
+    backgroundColor: "transparent",
   },
   header: {
     paddingHorizontal: 4,
     paddingVertical: 8,
-    backgroundColor: '#fa8072'
+    backgroundColor: "transparent",
   },
   navRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: '#fa8072'
+    backgroundColor: "transparent",
   },
   navText: {
     fontSize: 20,
@@ -143,7 +170,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 4,
-    backgroundColor: '#fa8072'
+    backgroundColor: "transparent",
   },
   weekdayText: {
     width: "14.2857%",
@@ -156,7 +183,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     alignContent: "space-between",
     gap: 10,
-    backgroundColor: '#fa8072'
+    backgroundColor: "transparent",
   },
   dayCell: {
     width: "14.2857%",
