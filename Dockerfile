@@ -9,9 +9,11 @@ COPY package*.json ./
 
 RUN npm install
 
-# Expo Audioパッケージをインストール。
+
+# Expo Audio と SQLite をインストール。
 # ここに書きたくないけど、とりあえず動かすために仕方なく記載。
 RUN npx expo install expo-audio
+RUN npx expo install expo-sqlite
 
 # ソースコードをコンテナにコピー
 COPY . .
