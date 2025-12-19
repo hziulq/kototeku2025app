@@ -31,9 +31,6 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: safeAreaBg }]}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">{monthLabel}</ThemedText>
-      </ThemedView>
       <CalendarView events={sampleEvents} />
     </SafeAreaView>
   );
