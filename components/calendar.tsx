@@ -62,12 +62,12 @@ export function CalendarView({ events = [], onSelectDate }: CalendarViewProps) {
       slots.push({ date: new Date(year, month, d), inMonth: true });
     }
 
-    while (slots.length < 42) {
+    while (slots.length < 36) {
       const nextIndex = slots.length - (firstDayIndex + daysInMonth);
       slots.push({ date: new Date(year, month + 1, nextIndex + 1), inMonth: false });
     }
 
-    return slots.slice(0, 42);
+    return slots.slice(0, 36);
   }, [cursor]);
 
   const changeMonth = (delta: number) => {
@@ -182,19 +182,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     alignContent: "space-between",
-    gap: 10,
+    gap: 1,
     backgroundColor: "transparent",
   },
   dayCell: {
-    width: "14.2857%",
+    width: "16.4%",
     minWidth: 48,
-    height: "16%",
+    height: "16.8%",
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    borderRadius: 8,
     padding: 6,
     backgroundColor: "#fff",
-    gap: 6,
+    gap: 4,
   },
   outMonthCell: {
     backgroundColor: "#f8fafc",

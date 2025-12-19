@@ -16,7 +16,7 @@ export default function HomeScreen() {
     { date: '2025-12-12', title: 'MTG', level: 3 },
     { date: '2025-12-22', title: 'リリース', level: 3 },
     { date: '2025-12-22', title: 'QA', level: 2 },
-    { date: '2025-12-28', title: '打ち上げ', level: 3 },
+    { date: '2025-12-28', title: '打ち上げ', level: 1 },
   ];
 
   const highPriorityCount = sampleEvents.filter((ev) => (ev.level ?? 1) >= 3).length;
@@ -42,7 +42,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fa8072',
   },
   header: {
     paddingHorizontal: 16,
