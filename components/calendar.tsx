@@ -1,3 +1,4 @@
+// kototeku2025app/components/calendar.tsx
 import { useMemo, useState } from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { ThemedView } from "@/components/themed-view";
@@ -62,12 +63,12 @@ export function CalendarView({ events = [], onSelectDate }: CalendarViewProps) {
       slots.push({ date: new Date(year, month, d), inMonth: true });
     }
 
-    while (slots.length < 36) {
+    while (slots.length < 42) {
       const nextIndex = slots.length - (firstDayIndex + daysInMonth);
       slots.push({ date: new Date(year, month + 1, nextIndex + 1), inMonth: false });
     }
 
-    return slots.slice(0, 36);
+    return slots.slice(0, 42);
   }, [cursor]);
 
   const changeMonth = (delta: number) => {
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   dayCell: {
-    width: "16.4%",
+    width: "14%",
     minWidth: 48,
     height: "16.8%",
     borderWidth: 1,

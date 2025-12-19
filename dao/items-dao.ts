@@ -28,7 +28,7 @@ export const ItemsDAO = {
       const result = await db.getAllAsync<Item>(`
         SELECT *
         FROM items 
-        ORDER BY updated_at DESC;
+        ORDER BY datetime_at ASC;
       `);
       return result;
     } catch (error) {

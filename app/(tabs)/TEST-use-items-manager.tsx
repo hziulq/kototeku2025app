@@ -3,10 +3,19 @@
   * このファイルはアプリケーションのSQLiteデータベース機能 (CRUD操作) をテストするためのメイン画面コンポーネントです。
   * useItemsManager フックを通じて、データ状態、接続状態、および操作メソッドを取得します。
   */
-import React from 'react';
-import { View, Text, Button, FlatList, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, Button, FlatList, StyleSheet, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { useItemsManager } from '../../hooks/use-items-manager';
 import { Item, NewItem } from '../../db/db-service';
+import { DataLoader } from '../../components/common/DataLoader';
+import { getStatusColor, COLORS } from '../../utils/status-color-util';
+
+import { useRouter } from 'expo-router'; // 追加
+import { TaskItem } from '@/components/common/TaskItem';
+
+
+// フィルタリング用の型定義
+type FilterStatus = 'all' | 'todo' | 'done';
 
 /**
  * @component TestScreen
@@ -19,6 +28,7 @@ import { Item, NewItem } from '../../db/db-service';
  * 3. 接続完了: 通常のCRUD操作UIとアイテムリストを表示
  */
 const TestScreen: React.FC = () => {
+  const router = useRouter(); // routerを取得
   // useItemsManager フックから状態と操作メソッドを取得
   const {
     items,
@@ -27,9 +37,33 @@ const TestScreen: React.FC = () => {
     loadItems,
     addItem,
     deleteItem,
-    clearAllItems,
     updateItem,
   } = useItemsManager();
+
+  // フィルタ状態を管理
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
+
+  // --- 統計データの集計 ---
+  const stats = useMemo(() => {
+    const counts = { red: 0, yellow: 0, green: 0 };
+    items.forEach(it => {
+      if (it.is_done) return;
+      const color = getStatusColor(it.datetime_at, false);
+      if (color === COLORS.danger) counts.red++;
+      else if (color === COLORS.warning) counts.yellow++;
+      else counts.green++;
+    });
+    return counts;
+  }, [items]);
+
+  // --- フィルタリングロジック ---
+  const filteredItems = useMemo(() => {
+    switch (filterStatus) {
+      case 'todo': return items.filter(it => !it.is_done);
+      case 'done': return items.filter(it => it.is_done);
+      default: return items;
+    }
+  }, [items, filterStatus]);
 
   // 1. --- 初期ローディング状態 ---
   if (isInitialLoading) {
@@ -54,62 +88,29 @@ const TestScreen: React.FC = () => {
     );
   }
 
-  // 3. --- DB接続OKの場合の通常UI ---
-
-  /**
-   * @function handleAddItem
-   * @description 新しいアイテムを作成し、DBに挿入する。
-   */
-  const handleAddItem = () => {
-    const newItem: NewItem = {
-      title: `Item ${Date.now()}`,
-      description: 'This is a test item',
-      is_done: false,
-      datetime_at: null,
-    };
-    addItem(newItem);
+/**
+ * @function handleAddItem
+ * @description 新しいアイテムを作成し、DBに挿入後、その詳細画面へ遷移する。
+ */
+const handleAddItem = async () => {
+  const newItem: NewItem = {
+    title: ``, // デフォルトタイトル
+    description: '',
+    is_done: false,
+    datetime_at: null, // デフォルトは今日
   };
+  await addItem(newItem);
+};
 
   /**
    * @function handleUpdateItem
    * @description 既存のアイテムを更新する。
    * @param {number} id 更新対象のID。
-   * @param {NewItem} updatedItem 更新データ。
    */
-  const handleUpdateItem = (id: number, updatedItem: NewItem) => {
-    const newItem: NewItem = {
-      title: updatedItem.title,
-      description: updatedItem.description,
-      is_done: updatedItem.is_done,
-      datetime_at: updatedItem.datetime_at,
-    };
-    // updateItem に渡す前に、更新されたデータをユーザの入力に合わせて上書きする。
-    // 現在はそのまま渡す。
-    updateItem(id, newItem);
-  };
-
-  /**
-   * @function handleDeleteItem
-   * @description 指定したIDのアイテムを削除する。
-   * @param {number} id 削除対象のID。
-   */
-  const handleDeleteItem = (id: number) => {
-    deleteItem(id);
-  };
-
-  /**
-   * @function handleClearAll
-   * @description 全てのアイテムを削除する (確認アラート付き)。
-   */
-  const handleClearAll = () => {
-    Alert.alert(
-      "確認",
-      "全てのアイテムを削除してもよろしいですか？",
-      [
-        { text: "キャンセル" },
-        { text: "削除", style: 'destructive', onPress: () => clearAllItems() }
-      ]
-    );
+  // handleUpdateItem を修正
+  const handleEditPress = (id: number) => {
+    // 編集画面へ遷移。IDをパスパラメータとして渡す
+    router.push(`../edit-item/${id}`);
   };
 
   /**
@@ -118,64 +119,74 @@ const TestScreen: React.FC = () => {
    * @param {{item: Item}} item レンダリング対象のアイテムオブジェクト。
    */
   const renderItem = ({ item }: { item: Item }) => (
-    <View style={styles.itemContainer}>
-      <View style={styles.itemTextContainer}>
-        <Text style={styles.itemId}>ID: {item.id}</Text>
-        <Text style={styles.itemValue}>{item.title}</Text>
-        <Text style={styles.itemDate}>保存日時: {new Date(item.updated_at).toLocaleTimeString()}</Text>
-      </View>
-      <Button
-        title="編集"
-        onPress={() => handleUpdateItem(item.id, item)}
-        color="#ff6347"
-      // データ操作中のローディング状態は無視するため、ここではdisabledを使いません
-      />
-      <Button
-        title="削除"
-        onPress={() => handleDeleteItem(item.id)}
-        color="#ff6347"
-      // データ操作中のローディング状態は無視するため、ここではdisabledを使いません
-      />
-    </View>
+    <TaskItem
+      item={item}
+      onEdit={(id) => router.push(`../edit-item/${id}`)}
+      displayMode="detail" // 保存時刻を表示
+    />
   );
+
+  // --- メインのレンダリング ---
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>SQLite CRUD テスト</Text>
-      <Text style={styles.statusText}>DBステータス: 接続完了</Text>
+      <DataLoader isLoading={isInitialLoading} isReady={isDBConnectionReady} onRetry={loadItems}>
+        <Text style={styles.header}>タスク管理</Text>
 
-      <View style={styles.buttonRow}>
-        <Button
-          title="アイテムを追加 (INSERT)"
-          onPress={handleAddItem}
+        {/* 統計バッジの表示 */}
+        <View style={styles.statsContainer}>
+          <View style={[styles.statsBadge, { backgroundColor: COLORS.danger }]}>
+            <Text style={styles.statsText}>至急: {stats.red}</Text>
+          </View>
+          <View style={[styles.statsBadge, { backgroundColor: COLORS.warning }]}>
+            <Text style={[styles.statsText, { color: '#000' }]}>注意: {stats.yellow}</Text>
+          </View>
+          <View style={[styles.statsBadge, { backgroundColor: COLORS.success }]}>
+            <Text style={styles.statsText}>余裕: {stats.green}</Text>
+          </View>
+        </View>
+
+        {/* フィルタ切替ボタン */}
+        <View style={styles.filterRow}>
+          <TouchableOpacity
+            style={[styles.filterBtn, filterStatus === 'all' && styles.filterBtnActive]}
+            onPress={() => setFilterStatus('all')}
+          >
+            <Text style={filterStatus === 'all' ? styles.whiteText : null}>すべて</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterBtn, filterStatus === 'todo' && styles.filterBtnActive]}
+            onPress={() => setFilterStatus('todo')}
+          >
+            <Text style={filterStatus === 'todo' ? styles.whiteText : null}>未完了</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterBtn, filterStatus === 'done' && styles.filterBtnActive]}
+            onPress={() => setFilterStatus('done')}
+          >
+            <Text style={filterStatus === 'done' ? styles.whiteText : null}>完了済</Text>
+          </TouchableOpacity>
+          <Button title="新規追加" onPress={() => handleAddItem()} />
+        </View>
+
+        {/* <View style={styles.buttonRow}>
+
+        </View> */}
+
+        <FlatList
+          data={filteredItems} // フィルタリングされた配列を表示
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          ListEmptyComponent={<Text style={styles.emptyText}>該当するアイテムがありません。</Text>}
         />
-        <Button
-          title="リストを再読み込み (SELECT)"
-          onPress={loadItems}
-        />
-      </View>
-      <Button
-        title="全アイテムをクリア (DELETE ALL)"
-        onPress={handleClearAll}
-        color="#ff4500"
-      />
-
-      <Text style={styles.listHeader}>保存されたアイテム ({items.length}件):</Text>
-
-      <FlatList
-        data={items}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        style={styles.list}
-        ListEmptyComponent={<Text style={styles.emptyText}>アイテムはまだありません。</Text>}
-      />
+      </DataLoader>
     </View>
   );
 };
 
 // スタイル定義
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
+  container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' , paddingTop: 45},
   center: { justifyContent: 'center', alignItems: 'center' },
   header: { fontSize: 24, fontWeight: 'bold', marginBottom: 10, color: '#333' },
   statusText: { fontSize: 16, marginBottom: 20, color: '#555' },
@@ -184,9 +195,8 @@ const styles = StyleSheet.create({
   list: { flex: 1 },
   itemContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 10,
+    padding: 12,
     marginVertical: 4,
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -200,7 +210,38 @@ const styles = StyleSheet.create({
   itemId: { fontSize: 12, color: '#999' },
   itemValue: { fontSize: 16, fontWeight: '500', color: '#000' },
   itemDate: { fontSize: 10, color: '#999', marginTop: 2 },
-  emptyText: { textAlign: 'center', marginTop: 20, color: '#777' }
+  emptyText: { textAlign: 'center', marginTop: 20, color: '#777' },
+
+  filterRow: { flexDirection: 'row', marginBottom: 15, gap: 10 },
+  filterBtn: { flex: 1, padding: 8, backgroundColor: '#ddd', borderRadius: 20, alignItems: 'center' },
+  filterBtnActive: { backgroundColor: '#007AFF' },
+  whiteText: { color: '#fff', fontWeight: 'bold' },
+  itemContainerDone: { backgroundColor: '#f9f9f9', opacity: 0.7 },
+  checkCircle: { marginRight: 15, padding: 5 },
+  textDone: { textDecorationLine: 'line-through', color: '#aaa' },
+  subText: { fontSize: 12, color: '#666' },
+
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    gap: 8,
+  },
+  statsBadge: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+  },
+  statsText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
 });
 
 export default TestScreen;

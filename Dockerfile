@@ -7,13 +7,15 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
 
-
-# Expo Audio と SQLite をインストール。
+# 必要なパッケージをインストール。
 # ここに書きたくないけど、とりあえず動かすために仕方なく記載。
 RUN npx expo install expo-audio
 RUN npx expo install expo-sqlite
+RUN npx expo install @react-native-community/datetimepicker
+RUN npx expo install react-native-calendars
+
+RUN npm install
 
 # ソースコードをコンテナにコピー
 COPY . .
